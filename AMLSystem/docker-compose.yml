@@ -6,7 +6,7 @@ services:
       - "3306:3306"
     environment:
       - MARIADB_ROOT_PASSWORD=root
-      - MARIADB_DATABASE=amlsystem
+      - MARIADB_DATABASE=aml
   phpmyadmin:
     image: phpmyadmin
     ports:
