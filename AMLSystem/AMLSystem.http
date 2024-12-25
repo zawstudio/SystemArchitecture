@@ -1,0 +1,6 @@
+@AMLSystem_HostAddress = http://localhost:5038
+
+GET {{AMLSystem_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
