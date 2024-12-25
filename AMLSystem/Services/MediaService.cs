@@ -61,7 +61,7 @@ public class MediaService
     public async Task BorrowMediaAsync(int mediaId)
     {
         var mediaItem = await _mediaRepository.GetByIdAsync(mediaId);
-        if (mediaItem == null) throw new Exception("Media item not found.");
+        if (mediaItem is null) throw new Exception("Media item not found.");
         if (mediaItem.IsBorrowed) throw new InvalidOperationException("Media item is already borrowed.");
 
         mediaItem.IsBorrowed = true;
@@ -73,7 +73,7 @@ public class MediaService
     public async Task ReturnMediaAsync(int mediaId)
     {
         var mediaItem = await _mediaRepository.GetByIdAsync(mediaId);
-        if (mediaItem == null) throw new Exception("Media item not found.");
+        if (mediaItem is null) throw new Exception("Media item not found.");
         if (!mediaItem.IsBorrowed) throw new InvalidOperationException("Media item is not currently borrowed.");
 
         mediaItem.IsBorrowed = false;

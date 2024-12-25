@@ -26,7 +26,7 @@ public class MediaController : ControllerBase
     public async Task<ActionResult<MediaItem>> GetById(int id)
     {
         var mediaItem = await _mediaService.GetMediaByIdAsync(id);
-        if (mediaItem == null) return NotFound();
+        if (mediaItem is null) return NotFound();
         return mediaItem;
     }
 
@@ -107,4 +107,31 @@ public class MediaController : ControllerBase
         var borrowedMediaItems = await _mediaService.GetBorrowedMediaAsync();
         return Ok(borrowedMediaItems);
     }
+    
+    [HttpPost("{id}/upload-image")]
+    public async Task<IActionResult> UploadImage(int id, [FromForm] IFormFile file)
+    {
+        var mediaItem = await _mediaService.GetMediaByIdAsync(id);
+        if (mediaItem is null) return NotFound("Media item not found.");
+
+        if (file is null || file.Length is 0)
+            return BadRequest("No file uploaded.");
+        
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+        var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        await using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+        
+        mediaItem.ImageUrl = $"/images/{fileName}";
+        await _mediaService.UpdateMediaAsync(mediaItem);
+
+        return Ok(new { ImageUrl = mediaItem.ImageUrl });
+    }
+
 }

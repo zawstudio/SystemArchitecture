@@ -21,5 +21,9 @@ public class MediaItem
     public DateTime? IssueDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public Genre Genre { get; set; }
+
     public bool IsBorrowed { get; set; } = false;
+    
+    public string Description { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
 }
