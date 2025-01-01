@@ -36,7 +36,7 @@ public class MediaRepository : IMediaRepository
     public async Task DeleteAsync(int id)
     {
         var mediaItem = await GetByIdAsync(id);
-        if (mediaItem != null)
+        if (mediaItem is not null)
         {
             _context.Set<MediaItem>().Remove(mediaItem);
         }

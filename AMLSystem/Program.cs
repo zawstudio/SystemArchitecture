@@ -2,53 +2,38 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AMLSystem.AutofacModules;
 using AMLSystem.DAL.Migrations;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
-IConfiguration configuration = new ConfigurationBuilder()
-    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .Build();
-
-var defaultConnectionString = configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(defaultConnectionString))
-    throw new InvalidOperationException("DefaultConnection string is null or empty. Check appsettings.json.");
-
-builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
-    .ConfigureContainer<ContainerBuilder>(containerBuilder =>
-    {
-        containerBuilder.RegisterModule(new DatabaseModule(defaultConnectionString));
-        containerBuilder.RegisterModule(new MigrationModule(defaultConnectionString));
-        containerBuilder.RegisterModule(new ServiceModule());
-    });
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    containerBuilder.RegisterModule(new DatabaseModule(connectionString));
+    containerBuilder.RegisterModule(new MigrationModule(connectionString));
+    containerBuilder.RegisterModule(new ServiceModule());
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("MediaService", new OpenApiInfo
-    {
-        Title = "Media Service API",
-        Description = "API for managing media items, borrowing and returning them."
-    });
-});
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseCors(opt => opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
     var migrationService = scope.ServiceProvider.GetRequiredService<MigrationService>();
-    migrationService.UpdateDatabase();
+    migrationService.ApplyMigrations();
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Media Service API v1"));
-}
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
 app.Run();

@@ -5,14 +5,13 @@ namespace AMLSystem.DAL.Models;
 
 public class MediaItem
 {
+   [Key]
     public int Id { get; set; }
 
     [Required]
-    [MaxLength(255)]
     public string Name { get; set; } = string.Empty;
 
     [Required]
-    [MaxLength(255)]
     public string Author { get; set; } = string.Empty;
 
     [Required]

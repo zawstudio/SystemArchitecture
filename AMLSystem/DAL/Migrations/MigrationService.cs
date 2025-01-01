@@ -1,6 +1,7 @@
 using System.Reflection;
 using DbUp;
 using DbUp.Engine;
+using Microsoft.EntityFrameworkCore;
 
 namespace AMLSystem.DAL.Migrations;
 
@@ -25,6 +26,15 @@ public class MigrationService
         }
 
         Console.WriteLine("Database is updated.");
+    }
+
+    public void ApplyMigrations()
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<AmlContext>();
+        optionsBuilder.UseMySql(_connectionString, ServerVersion.AutoDetect(_connectionString));
+
+        using var context = new AmlContext(optionsBuilder.Options);
+        context.Database.Migrate();
     }
 
     private UpgradeEngine BuildUpgradeEngine()

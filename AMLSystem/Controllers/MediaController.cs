@@ -16,18 +16,22 @@ public class MediaController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MediaItem>>> GetAll()
+    public async Task<IActionResult> GetAll()
     {
         var mediaItems = await _mediaService.GetAllMediaAsync();
         return Ok(mediaItems);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<MediaItem>> GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
         var mediaItem = await _mediaService.GetMediaByIdAsync(id);
-        if (mediaItem is null) return NotFound();
-        return mediaItem;
+        if (mediaItem is null)
+        {
+            return NotFound(new { Message = "Media item not found" });
+        }
+
+        return Ok(mediaItem);
     }
 
     [HttpPost]
@@ -45,7 +49,11 @@ public class MediaController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] MediaItem mediaItem)
     {
-        if (id != mediaItem.Id) return BadRequest();
+        if (id != mediaItem.Id)
+        {
+            return BadRequest(new { Message = "ID in route does not match ID in body" });
+        }
+
         await _mediaService.UpdateMediaAsync(mediaItem);
         return NoContent();
     }
@@ -65,73 +73,46 @@ public class MediaController : ControllerBase
         return Ok(mediaItems);
     }
 
-    [HttpPost("borrow")]
-    public async Task<IActionResult> Borrow([FromQuery] int mediaId)
-    {
-        try
-        {
-            await _mediaService.BorrowMediaAsync(mediaId);
-            return Ok(new { Message = "Media item borrowed successfully." });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { Error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return NotFound(new { Error = ex.Message });
-        }
-    }
-
-    [HttpPost("return")]
-    public async Task<IActionResult> Return([FromQuery] int mediaId)
-    {
-        try
-        {
-            await _mediaService.ReturnMediaAsync(mediaId);
-            return Ok(new { Message = "Media item returned successfully." });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { Error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return NotFound(new { Error = ex.Message });
-        }
-    }
-
     [HttpGet("borrowed")]
-    public async Task<IActionResult> ListBorrowedItems()
+    public async Task<IActionResult> GetBorrowedMedia()
     {
-        var borrowedMediaItems = await _mediaService.GetBorrowedMediaAsync();
-        return Ok(borrowedMediaItems);
+        var borrowedItems = await _mediaService.GetBorrowedMediaAsync();
+        return Ok(borrowedItems);
     }
-    
-    [HttpPost("{id}/upload-image")]
-    public async Task<IActionResult> UploadImage(int id, [FromForm] IFormFile file)
+
+    [HttpPost("borrow/{id}")]
+    public async Task<IActionResult> BorrowMedia(int id)
     {
-        var mediaItem = await _mediaService.GetMediaByIdAsync(id);
-        if (mediaItem is null) return NotFound("Media item not found.");
-
-        if (file is null || file.Length is 0)
-            return BadRequest("No file uploaded.");
-        
-        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-        var fileName = $"{Guid.NewGuid()}_{file.FileName}";
-        var filePath = Path.Combine(uploadsFolder, fileName);
-
-        await using (var stream = new FileStream(filePath, FileMode.Create))
+        try
         {
-            await file.CopyToAsync(stream);
+            await _mediaService.BorrowMediaAsync(id);
+            return Ok(new { Message = "Media item borrowed successfully" });
         }
-        
-        mediaItem.ImageUrl = $"/images/{fileName}";
-        await _mediaService.UpdateMediaAsync(mediaItem);
-
-        return Ok(new { ImageUrl = mediaItem.ImageUrl });
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { Error = ex.Message });
+        }
     }
 
+    [HttpPost("return/{id}")]
+    public async Task<IActionResult> ReturnMedia(int id)
+    {
+        try
+        {
+            await _mediaService.ReturnMediaAsync(id);
+            return Ok(new { Message = "Media item returned successfully" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { Error = ex.Message });
+        }
+    }
 }
