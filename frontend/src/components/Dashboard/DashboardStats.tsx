@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/api";
 
+interface MediaItem {
+    id: number;
+    name: string;
+    author: string;
+    issueDate: string | null;
+    returnDate: string | null;
+    isBorrowed: boolean;
+}
+
 interface StatCardProps {
     title: string;
     value: number;
@@ -8,18 +17,16 @@ interface StatCardProps {
     subtitle: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, subtitle }) => {
-    return (
-        <div className="bg-white rounded-lg shadow-md p-4 flex items-center space-x-4">
-            <div className="text-blue-500">{icon}</div>
-            <div>
-                <h2 className="text-2xl font-bold">{value}</h2>
-                <p className="text-gray-500">{title}</p>
-                <p className="text-sm text-gray-400">{subtitle}</p>
-            </div>
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, subtitle }) => (
+    <div className="bg-white rounded-lg shadow-md p-4 flex items-center space-x-4">
+        <div className="text-blue-500 text-3xl">{icon}</div>
+        <div>
+            <h2 className="text-2xl font-bold">{value}</h2>
+            <p className="text-gray-500">{title}</p>
+            <p className="text-sm text-gray-400">{subtitle}</p>
         </div>
-    );
-};
+    </div>
+);
 
 const DashboardStats: React.FC = () => {
     const [stats, setStats] = useState({
@@ -33,29 +40,31 @@ const DashboardStats: React.FC = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const allMediaResponse = await api.get("/media");
+                const allMediaResponse = await api.get<MediaItem[]>("/");
+                console.log("Fetched media data:", allMediaResponse.data);
+
                 const allMedia = allMediaResponse.data;
-
-                const borrowedMediaResponse = await api.get("/media/borrowed");
-                const borrowedMedia = borrowedMediaResponse.data;
-
-                const totalMedia = allMedia.length;
-                const borrowedMediaCount = borrowedMedia.length;
-                const availableMedia = totalMedia - borrowedMediaCount;
-
+                const borrowedMedia = allMedia.filter((media) => media.isBorrowed);
                 const overdueMedia = borrowedMedia.filter(
-                    (media: any) =>
+                    (media) =>
                         media.returnDate && new Date(media.returnDate) < new Date()
-                ).length;
+                );
 
                 setStats({
-                    totalMedia,
-                    borrowedMedia: borrowedMediaCount,
-                    availableMedia,
-                    overdueMedia,
+                    totalMedia: allMedia.length,
+                    borrowedMedia: borrowedMedia.length,
+                    availableMedia: allMedia.length - borrowedMedia.length,
+                    overdueMedia: overdueMedia.length,
+                });
+
+                console.log("Stats after fetching:", {
+                    totalMedia: allMedia.length,
+                    borrowedMedia: borrowedMedia.length,
+                    availableMedia: allMedia.length - borrowedMedia.length,
+                    overdueMedia: overdueMedia.length,
                 });
             } catch (error) {
-                console.error("Error fetching stats:", error);
+                console.error("Error fetching stats");
             } finally {
                 setLoading(false);
             }
