@@ -9,7 +9,7 @@ const RecentlyIssuedMedia: React.FC = () => {
     useEffect(() => {
         const fetchBorrowedMedia = async () => {
             try {
-                const response = await api.get<MediaItem[]>("/media/borrowed");
+                const response = await api.get<MediaItem[]>("/borrowed");
                 setIssuedMedia(response.data);
             } catch (error) {
                 console.error("Error fetching borrowed media:", error);

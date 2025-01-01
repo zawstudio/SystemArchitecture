@@ -9,7 +9,7 @@ const MediaList: React.FC = () => {
     useEffect(() => {
         const fetchMediaItems = async () => {
             try {
-                const response = await api.get<MediaItem[]>("/media");
+                const response = await api.get<MediaItem[]>("/");
                 setMediaItems(response.data);
             } catch (error) {
                 console.error("Error fetching media items:", error);

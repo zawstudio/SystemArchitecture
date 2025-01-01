@@ -9,10 +9,14 @@ const HomePage: React.FC = () => {
         <div className="flex">
             <Sidebar />
             <div className="ml-64 p-4 w-full">
-                <DashboardStats />
+                <DashboardStats/>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <RecentlyIssuedMedia />
-                    <MediaList />
+                    <div className="h-[500px] overflow-y-auto border border-gray-300 rounded-lg p-4 shadow-md">
+                        <RecentlyIssuedMedia/>
+                    </div>
+                    <div className="h-[500px] overflow-y-auto border border-gray-300 rounded-lg p-4 shadow-md">
+                        <MediaList/>
+                    </div>
                 </div>
             </div>
         </div>
