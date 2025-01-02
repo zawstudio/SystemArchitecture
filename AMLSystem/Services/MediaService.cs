@@ -24,21 +24,9 @@ public class MediaService
         return await _mediaRepository.GetByIdAsync(id);
     }
 
-    public async Task AddMediaAsync(MediaItem mediaItem)
-    {
-        await _mediaRepository.AddAsync(mediaItem);
-        await _unitOfWork.SaveAsync();
-    }
-
     public async Task UpdateMediaAsync(MediaItem mediaItem)
     {
         await _mediaRepository.UpdateAsync(mediaItem);
-        await _unitOfWork.SaveAsync();
-    }
-
-    public async Task DeleteMediaAsync(int id)
-    {
-        await _mediaRepository.DeleteAsync(id);
         await _unitOfWork.SaveAsync();
     }
 

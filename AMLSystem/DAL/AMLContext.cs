@@ -5,11 +5,10 @@ namespace AMLSystem.DAL;
 
 public class AmlContext : DbContext
 {
-    public AmlContext(DbContextOptions<AmlContext> options) : base(options)
-    {
-    }
+    public AmlContext(DbContextOptions<AmlContext> options) : base(options) { }
 
     public DbSet<MediaItem> MediaItems { get; set; }
+    public DbSet<BorrowedMediaItem> BorrowedMediaItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +26,16 @@ public class AmlContext : DbContext
             entity.Property(m => m.ImageUrl).HasMaxLength(500);
             entity.Property(m => m.IssueDate).HasColumnType("datetime");
             entity.Property(m => m.ReturnDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<BorrowedMediaItem>(entity =>
+        {
+            entity.HasOne(b => b.MediaItem)
+                .WithOne()
+                .HasForeignKey<BorrowedMediaItem>(b => b.MediaItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(b => b.BorrowedDate).HasColumnType("datetime");
+            entity.Property(b => b.ReturnedDate).HasColumnType("datetime");
         });
     }
 }

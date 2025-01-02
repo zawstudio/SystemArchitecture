@@ -33,19 +33,7 @@ public class MediaController : ControllerBase
 
         return Ok(mediaItem);
     }
-
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] MediaItem mediaItem)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        await _mediaService.AddMediaAsync(mediaItem);
-        return CreatedAtAction(nameof(GetById), new { id = mediaItem.Id }, mediaItem);
-    }
-
+    
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] MediaItem mediaItem)
     {
@@ -55,13 +43,6 @@ public class MediaController : ControllerBase
         }
 
         await _mediaService.UpdateMediaAsync(mediaItem);
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        await _mediaService.DeleteMediaAsync(id);
         return NoContent();
     }
 
