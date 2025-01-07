@@ -1,6 +1,6 @@
 using Autofac;
-using AMLSystem.DAL;
 using Microsoft.EntityFrameworkCore;
+using AMLSystem.DAL;
 
 namespace AMLSystem.AutofacModules;
 
@@ -17,11 +17,11 @@ public class DatabaseModule : Module
     {
         builder.Register(_ =>
             {
-                var optionsBuilder = new DbContextOptionsBuilder();
+                var optionsBuilder = new DbContextOptionsBuilder<AmlContext>();
                 optionsBuilder.UseMySql(_connectionString, ServerVersion.AutoDetect(_connectionString));
                 return new AmlContext(optionsBuilder.Options);
             })
-            .AsSelf()
+            .As<AmlContext>()
             .InstancePerLifetimeScope();
     }
 }

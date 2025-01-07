@@ -1,3 +1,0 @@
-ALTER TABLE MediaItem
-    ADD COLUMN Description TEXT NULL,
-    ADD COLUMN ImageUrl VARCHAR(255) NULL;
